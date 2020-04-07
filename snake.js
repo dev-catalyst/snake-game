@@ -1,6 +1,8 @@
 var canvas = document.getElementById("snakeCanvas");
 var score = document.getElementById("score");
 var startBtn = document.getElementById("startBtn");
+var pauseBtn = document.getElementById("pauseBtn");
+var resumeBtn = document.getElementById("resumeBtn");
 var context = canvas.getContext("2d");
 var fruit=document.getElementById("fruit");
 //coordinates of snake head
@@ -23,14 +25,28 @@ var direction,
 var interval;
 
 startBtn.addEventListener("click", startGame);
+pauseBtn.addEventListener("click", ()=>{
+    window.clearInterval(interval);
+    pauseBtn.style.backgroundColor="#ccc";
+    resumeBtn.style.backgroundColor="#fff";
+});
+resumeBtn.addEventListener("click", ()=>{
+    main();
+    pauseBtn.style.backgroundColor="#fff";
+    resumeBtn.style.backgroundColor="#ccc";
+})
 
 function startGame() {
+    pauseBtn.style.backgroundColor="#fff";
+    resumeBtn.style.backgroundColor="#fff";
     clearInterval(interval);
     init();
 }
 
 function init() {
     reset();
+    //fruit position at starting
+    fruitPosition();
     main();
 }
 
@@ -65,7 +81,7 @@ function checkCollision() {
     //with boundaries
     if(snakeHeadX >= canvas.width || snakeHeadX < 0 || snakeHeadY >= canvas.height || snakeHeadY < 0)
     {
-        boundaryCollision=true
+        boundaryCollision=true;
     }
     return (tailCollision || boundaryCollision);
 }
@@ -79,16 +95,48 @@ function drawSnake() {
     } else {
         //draw snake's head
         context.beginPath();
-        context.rect(snakeHeadX, snakeHeadY, scale, scale);
-        context.fillStyle = "#e99100";
+        context.arc(snakeHeadX+scale/2, snakeHeadY+scale/2, scale/2, 0, 2 * Math.PI);
+        context.fillStyle = "#7d4350";
+        // context.fillStyle = "#ff391d";
+        context.fill();
+        //eyes
+        context.beginPath();
+        if(direction==="Up") {
+            //1st eye
+            context.arc(snakeHeadX+4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
+            //2nd eye
+            context.arc(snakeHeadX+scale-4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
+        }
+        else if(direction==="Down") {
+            //1st eye
+            context.arc(snakeHeadX+4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
+            //2nd eye
+            context.arc(snakeHeadX+scale-4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
+        }
+        else if(direction==="Left") {
+            //1st eye
+            context.arc(snakeHeadX+4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
+            //2nd eye
+            context.arc(snakeHeadX+4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
+        }
+        else {
+            //1st eye
+            context.arc(snakeHeadX+scale-4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
+            //2nd eye
+            context.arc(snakeHeadX+scale-4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
+        }
+        context.fillStyle = "black";
         context.fill();
         //draw snake's tail
-        context.beginPath();
-        context.fillStyle = "#ffaa1d";
+        let tailRadius = 5;
         for (i = 0; i < tail.length; i++) {
-            context.rect(tail[i].tailX, tail[i].tailY, scale, scale);
+            tailRadius=tailRadius+(5/tail.length);
+            context.beginPath();
+            context.fillStyle = "#6c2c3a";
+            context.arc((tail[i].tailX+scale/2), (tail[i].tailY+scale/2), tailRadius, 0, 2 * Math.PI);
+            context.fill();
         }
-        context.fill();
+        
     }
 
 }
@@ -168,8 +216,6 @@ function changeDirection() {
 }
 
 function main() {
-    //fruit position at starting
-    fruitPosition();
     //update state at specified interval
     interval = window.setInterval(() => {
         context.clearRect(0, 0, 500, 500);
@@ -182,7 +228,7 @@ function main() {
             totalTail++;
             fruitPosition();
         }
-        score.innerText = totalTail * 5;
+        score.innerText = totalTail;
 
-    }, 200);
+    }, 150);
 }

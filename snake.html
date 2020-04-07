@@ -14,9 +14,22 @@
     <div class="gamePage d-flex flex-column justify-content-center align-items-center">
         <h1>Snake</h1>
         <div id="startBtn" class="btn mt-2 mb-4">Start Game?</div>
+        <div class="rel">
+            <div class="d-flex buttons">
+                <div id="pauseBtn">
+                    <img src="pause.png"></img>
+                </div>
+                <div id="resumeBtn">
+                    <img src="play.png"></img>
+                </div>
+            </div>
+            <h2 class="mt-3"><span class="result"><img src="apple1.png" alt="fruit"></span><span id="score">0</span></h2>
+        </div>
         <canvas id="snakeCanvas" width="500" height="500"></canvas>
+        
+        
         <img id="fruit" src="apple1.png" alt="fruit">
-        <h2 class="mt-3">Your Score: <span id="score">0</span></h2>
+       
     </div>
 
     <script type="text/javascript" src="snake.js"></script>
