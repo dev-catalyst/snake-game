@@ -6,40 +6,24 @@ var resumeBtn = document.getElementById("resumeBtn");
 var context = canvas.getContext("2d");
 var fruit=document.getElementById("fruit");
 //coordinates of snake head
-var snakeHeadX; 
-var snakeHeadY;
-var speed=1;
-var xSpeed;
-var ySpeed;
+var snakeHeadX, snakeHeadY, fruitX, fruitY, tail, totalTail, direction, previousDir;
+var speed=1, xSpeed, ySpeed;
 const scale = 20;
 var rows = canvas.height / scale;
 var columns = canvas.width / scale;
 var min = scale / 10; //for min coordinate of fruit
 var max = rows - min; //for max 
-var fruitX;
-var fruitY;
-var tail;
-var totalTail;
-var direction,
-    previousDir;
 var interval;
-
+var playing=false, gameStarted=false;
 startBtn.addEventListener("click", startGame);
-pauseBtn.addEventListener("click", ()=>{
-    window.clearInterval(interval);
-    pauseBtn.style.backgroundColor="#ccc";
-    resumeBtn.style.backgroundColor="#fff";
-});
-resumeBtn.addEventListener("click", ()=>{
-    main();
-    pauseBtn.style.backgroundColor="#fff";
-    resumeBtn.style.backgroundColor="#ccc";
-})
+pauseBtn.addEventListener("click", pauseGame);
+resumeBtn.addEventListener("click", resumeGame)
 
 function startGame() {
-    pauseBtn.style.backgroundColor="#fff";
-    resumeBtn.style.backgroundColor="#fff";
-    clearInterval(interval);
+    
+    gameStarted=true;
+    playing=true;
+    // clearInterval(interval);
     init();
 }
 
@@ -50,11 +34,37 @@ function init() {
     main();
 }
 
+function pauseGame()
+{
+    window.clearInterval(interval);
+    pauseBtn.style.backgroundColor="#ccc";
+    resumeBtn.style.backgroundColor="#fff";
+    playing=false;
+}
+
+function resumeGame()
+{
+    main();
+    pauseBtn.style.backgroundColor="#fff";
+    resumeBtn.style.backgroundColor="#ccc";
+    playing=true;
+}
+
 //EventListener to check which arrow key is pressed
 window.addEventListener("keydown", (event) => {
-    previousDir = direction;
-    direction = event.key.replace("Arrow", "");
-    changeDirection();
+    if(event.keyCode===32 && gameStarted) {
+        if(playing) {
+            pauseGame();
+        }
+        else{
+            resumeGame();
+        }
+    }
+    else {
+        previousDir = direction;
+        direction = event.key.replace("Arrow", "");
+        changeDirection();
+    }
 });
 
 //reset the variables to starting value
@@ -67,6 +77,8 @@ function reset() {
     ySpeed = 0;
     snakeHeadX = 0;
     snakeHeadY = 0;
+    pauseBtn.style.backgroundColor="#fff";
+    resumeBtn.style.backgroundColor="#fff";
 }
 
 //check snake's collision 
@@ -160,6 +172,7 @@ function fruitPosition() {
     for(let i=0; i< tail.length; i++){
         if(fruitX===tail[i].tailX && fruitY===tail[i].tailY)
         {
+            console.log("same",fruitX,fruitY);
             fruitPosition();
         }
     }
