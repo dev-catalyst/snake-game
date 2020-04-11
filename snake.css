@@ -20,7 +20,7 @@ h2 {
 }
 
 canvas {
-    background-image: url(./images/green1.jpg);
+    background-image: url(./images/green.jpg);
     background-repeat: no-repeat;
     background-size: cover;
 }
@@ -60,7 +60,7 @@ canvas {
     margin-right: 10px;
 }
 
-#fruit{
+#fruit, #virus, #rock{
     display: none;
 }
 

@@ -4,39 +4,77 @@ var startBtn = document.getElementById("startBtn");
 var pauseBtn = document.getElementById("pauseBtn");
 var resumeBtn = document.getElementById("resumeBtn");
 var context = canvas.getContext("2d");
-var fruit=document.getElementById("fruit");
+var fruit = document.getElementById("fruit");
+var rock = document.getElementById("rock");
+var virus = document.getElementById("virus");
 //coordinates of snake head
-var snakeHeadX, snakeHeadY, fruitX, fruitY, tail, totalTail, direction, previousDir;
+var snakeHeadX, snakeHeadY, fruitX, fruitY, virusX, virusY, tail, totalTail, directionVar, direction, previousDir;
 var speed=1, xSpeed, ySpeed;
 const scale = 20;
 var rows = canvas.height / scale;
 var columns = canvas.width / scale;
 var min = scale / 10; //for min coordinate of fruit
 var max = rows - min; //for max 
-var interval;
+var gameInterval,  //interval after which screen will be updated
+    virusInterval, //interval after which virus position will be updated
+    intervalDuration=150, //starting screen updation interval
+    minDuration=75; //minimum screen updation interval
 var playing=false, gameStarted=false;
+var boundaryCollision=false, hurdleCollision=false;
+var tail0;
+var hurdleArray, maxHurdles;
 startBtn.addEventListener("click", startGame);
 pauseBtn.addEventListener("click", pauseGame);
 resumeBtn.addEventListener("click", resumeGame)
 
-function startGame() {
-    
-    gameStarted=true;
-    playing=true;
-    // clearInterval(interval);
-    init();
+//reset the variables to starting value
+function reset() {
+    tail = [];
+    hurdleArray = [];
+    maxHurdles = 15;
+    totalTail = 0;
+    directionVar = "Right";
+    direction = "Right";
+    previousDir = "Right";
+    xSpeed = scale * speed;
+    ySpeed = 0;
+    snakeHeadX = 0;
+    snakeHeadY = 0;
+    pauseBtn.style.backgroundColor="#fff";
+    resumeBtn.style.backgroundColor="#fff";
 }
 
-function init() {
+function startGame() {
+    gameStarted=true;
+    playing=true;
+    // clearInterval(gameInterval);
+    // init();
     reset();
-    //fruit position at starting
     fruitPosition();
+    virusPosition();
+    staticHurdles();
+    // console.log(hurdleArray);
+    // drawHurdles();
     main();
 }
 
-function pauseGame()
-{
-    window.clearInterval(interval);
+function staticHurdles() {
+    let hurdle;
+    for(let i=0;i<2;i++) {
+        hurdle=generateCoordinates();
+        hurdleArray.push(hurdle);
+    }
+}
+
+function drawHurdles() {
+    for(let i=0; i<hurdleArray.length; i++) {
+        context.drawImage(rock, hurdleArray[i].xCoordinate, hurdleArray[i].yCoordinate, scale, scale);
+    }
+}
+
+function pauseGame() {
+    window.clearInterval(gameInterval);
+    window.clearInterval(virusInterval);
     pauseBtn.style.backgroundColor="#ccc";
     resumeBtn.style.backgroundColor="#fff";
     playing=false;
@@ -62,28 +100,75 @@ window.addEventListener("keydown", (event) => {
     }
     else {
         previousDir = direction;
-        direction = event.key.replace("Arrow", "");
+        directionVar = event.key.replace("Arrow", "");
         changeDirection();
     }
 });
 
-//reset the variables to starting value
-function reset() {
-    tail = [];
-    totalTail = 0;
-    direction = "Right";
-    previousDir = "Right";
-    xSpeed = scale * speed;
-    ySpeed = 0;
-    snakeHeadX = 0;
-    snakeHeadY = 0;
-    pauseBtn.style.backgroundColor="#fff";
-    resumeBtn.style.backgroundColor="#fff";
+//change the direction of snake based on arrow key pressed
+function changeDirection() {
+    switch (directionVar) {
+        case "Up":
+            //move "up" only when previous direction is not "down"
+            if (previousDir !== "Down") {
+                direction=directionVar;
+                xSpeed = 0;
+                ySpeed = scale * -speed;
+            } 
+            // else {
+            //     direction = "Down";
+            // }
+            break;
+
+        case "Down":
+            //move "down" only when previous direction is not "up"
+            if (previousDir !== "Up") {
+                direction=directionVar;
+                xSpeed = 0;
+                ySpeed = scale * speed;
+            } 
+            // else {
+            //     direction = "Up";
+            // }
+            break;
+
+        case "Left":
+            //move "left" only when previous direction is not "right"
+            if (previousDir !== "Right") {
+                direction=directionVar;
+                xSpeed = scale * -speed;
+                ySpeed = 0;
+            } 
+            // else {
+            //     direction = "Right";
+            // }
+            break;
+
+        case "Right":
+            //move "right" only when previous direction is not "left"
+            if (previousDir !== "Left") {
+                direction=directionVar;
+                xSpeed = scale * speed;
+                ySpeed = 0;
+            } 
+            // else {
+            //     direction = "Left";
+            // }
+            break;
+    }
+}
+
+//random coordinates for fruit or virus
+function generateCoordinates() {
+    let xCoordinate = (Math.floor(Math.random() * (max - min) + min)) * scale;
+    let yCoordinate = (Math.floor(Math.random() * (max - min) + min)) * scale;
+    return {xCoordinate, yCoordinate};
 }
 
 //check snake's collision 
 function checkCollision() {
-    let tailCollision=false, boundaryCollision=false;
+    let tailCollision=false, virusCollision=false;
+    boundaryCollision=false, hurdleCollision=false;
     //with its own tail
     for (let i = 0; i < tail.length; i++) {
         if (snakeHeadX == tail[i].tailX && snakeHeadY == tail[i].tailY) {
@@ -95,52 +180,48 @@ function checkCollision() {
     {
         boundaryCollision=true;
     }
-    return (tailCollision || boundaryCollision);
+    //with virus
+    if(snakeHeadX===virusX && snakeHeadY===virusY) {
+        virusCollision=true;
+    }
+    for(let i=0; i<hurdleArray.length;i++) {
+        if(snakeHeadX===hurdleArray[i].xCoordinate && snakeHeadY===hurdleArray[i].yCoordinate) {
+            hurdleCollision=true;
+        }
+    }
+    return (tailCollision || boundaryCollision || virusCollision || hurdleCollision);
 }
 
-//display snake
-function drawSnake() {
-    //check collision with canvas boundaries or its own tail
-    if (checkCollision()) {
-        alert("Game Over! Your Score is: " + totalTail * 5);
-        window.location = window.location; //reload the page        
-    } else {
-        //draw snake's head
+//-----------------------------------------------------SNAKE-----------------------------------------------------------//
+function drawSnakeHead(color) {
         context.beginPath();
         context.arc(snakeHeadX+scale/2, snakeHeadY+scale/2, scale/2, 0, 2 * Math.PI);
-        context.fillStyle = "#7d4350";
-        // context.fillStyle = "#ff391d";
+        context.fillStyle = color;
         context.fill();
         //eyes
         context.beginPath();
         if(direction==="Up") {
-            //1st eye
             context.arc(snakeHeadX+4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
-            //2nd eye
             context.arc(snakeHeadX+scale-4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
         }
         else if(direction==="Down") {
-            //1st eye
             context.arc(snakeHeadX+4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
-            //2nd eye
             context.arc(snakeHeadX+scale-4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
         }
         else if(direction==="Left") {
-            //1st eye
             context.arc(snakeHeadX+4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
-            //2nd eye
             context.arc(snakeHeadX+4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
         }
         else {
-            //1st eye
             context.arc(snakeHeadX+scale-4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
-            //2nd eye
             context.arc(snakeHeadX+scale-4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
         }
         context.fillStyle = "black";
         context.fill();
-        //draw snake's tail
-        let tailRadius = 5;
+}
+
+function drawSnakeTail() {
+    let tailRadius = 5;
         for (i = 0; i < tail.length; i++) {
             tailRadius=tailRadius+(5/tail.length);
             context.beginPath();
@@ -148,34 +229,74 @@ function drawSnake() {
             context.arc((tail[i].tailX+scale/2), (tail[i].tailY+scale/2), tailRadius, 0, 2 * Math.PI);
             context.fill();
         }
-        
-    }
-
 }
 
-//move snake by shifting previous coordinates of snake's head and tail
-function updateSnakePosition() {
+//shift snake's previous positions to next position
+function moveSnakeForward() {
+    tail0=tail[0];
     for (let i = 0; i < tail.length - 1; i++) {
         tail[i] = tail[i + 1];
     }
     tail[totalTail - 1] = { tailX: snakeHeadX, tailY: snakeHeadY };
     snakeHeadX += xSpeed;
     snakeHeadY += ySpeed;
-
 }
 
+//only in case of boundary collision
+function moveSnakeBack()
+{
+    context.clearRect(0, 0, 500, 500);
+    for (let i = tail.length-1; i >= 1; i--) {
+        tail[i] = tail[i - 1];
+    }
+    if(tail.length>=1) {
+        tail[0] = { tailX: tail0.tailX, tailY: tail0.tailY };
+    }
+    snakeHeadX -= xSpeed;
+    snakeHeadY -= ySpeed;
+    drawVirus();
+    drawHurdles();
+    drawFruit();
+    drawSnakeTail();
+}
+
+//display snake
+function drawSnake() {
+    drawSnakeHead("#7d4350");
+    drawSnakeTail();
+    if (checkCollision()) {
+        clearInterval(gameInterval);
+        clearInterval(virusInterval);
+        if(boundaryCollision || hurdleCollision) {
+            moveSnakeBack();
+        }
+        drawSnakeHead("red");
+        setTimeout(()=>{ 
+            alert("Game Over! Your Score is: " + totalTail);
+             //reload the page        
+            window.location = window.location;
+        }, 1000);
+    }
+}
+
+
+//------------------------------------------------------VIRUS-----------------------------------------------------------//
+function virusPosition() {
+    let virus=generateCoordinates();
+    virusX=virus.xCoordinate;
+    virusY=virus.yCoordinate;
+}
+
+function drawVirus() {
+    context.drawImage(virus, virusX, virusY, scale, scale);
+}
+
+//------------------------------------------------------FRUIT-----------------------------------------------------------//
 //generate random fruit position within canvas boundaries
 function fruitPosition() {
-    fruitX = (Math.floor(Math.random() * (max - min) + min)) * scale;
-    fruitY = (Math.floor(Math.random() * (max - min) + min)) * scale;
-    //generate position again if it is same as some part of snake's tail (as it will hide behind tail) 
-    for(let i=0; i< tail.length; i++){
-        if(fruitX===tail[i].tailX && fruitY===tail[i].tailY)
-        {
-            console.log("same",fruitX,fruitY);
-            fruitPosition();
-        }
-    }
+    let fruit=generateCoordinates();
+    fruitX=fruit.xCoordinate;
+    fruitY=fruit.yCoordinate;
 }
 
 //draw image of fruit
@@ -183,65 +304,70 @@ function drawFruit() {
     context.drawImage(fruit, fruitX, fruitY, scale, scale);
 }
 
-//change the direction of snake
-function changeDirection() {
-    switch (direction) {
-        case "Up":
-            //move "up" only when previous direction is not "down"
-            if (previousDir !== "Down") {
-                xSpeed = 0;
-                ySpeed = scale * -speed;
-            } else {
-                direction = "Down";
-            }
+//------------------------------------------------------MAIN GAME-----------------------------------------------------------//
+function checkSamePosition() {
+    if(fruitX==virusX && fruitY==virusY) {
+        virusPosition();
+    }
+    for(let i=0; i< tail.length; i++){
+        if(virusX===tail[i].tailX && virusY===tail[i].tailY)
+        {
+            virusPosition();
             break;
-
-        case "Down":
-            //move "down" only when previous direction is not "up"
-            if (previousDir !== "Up") {
-                xSpeed = 0;
-                ySpeed = scale * speed;
-            } else {
-                direction = "Up";
-            }
+        }
+    }
+    for(let i=0; i< tail.length; i++){
+        if(fruitX===tail[i].tailX && fruitY===tail[i].tailY)
+        {
+            fruitPosition();
             break;
-
-        case "Left":
-            //move "left" only when previous direction is not "right"
-            if (previousDir !== "Right") {
-                xSpeed = scale * -speed;
-                ySpeed = 0;
-            } else {
-                direction = "Right";
-            }
+        }
+    }
+    for(let i=0; i<hurdleArray.length; i++) {
+        if(fruitX===hurdleArray[i].xCoordinate && fruitY===hurdleArray[i].yCoordinate) {
+            
+            fruitPosition();
+            console.log("sameFruit");
             break;
-
-        case "Right":
-            //move "right" only when previous direction is not "left"
-            if (previousDir !== "Left") {
-                xSpeed = scale * speed;
-                ySpeed = 0;
-            } else {
-                direction = "Left";
-            }
+        }
+        if(virusX===hurdleArray[i].xCoordinate && virusY===hurdleArray[i].yCoordinate) {
+            
+            virusPosition();
+            console.log("sameVirus");
             break;
+        }
     }
 }
 
 function main() {
     //update state at specified interval
-    interval = window.setInterval(() => {
+    virusInterval = window.setInterval(virusPosition, 10000);
+    gameInterval = window.setInterval(() => {
         context.clearRect(0, 0, 500, 500);
+        checkSamePosition();
+        drawHurdles();
+        drawVirus();
         drawFruit();
-        updateSnakePosition();
+        moveSnakeForward();
         drawSnake();
 
         //check if snake eats the fruit - increase size of its tail, update score and find new fruit position
         if (snakeHeadX === fruitX && snakeHeadY === fruitY) {
             totalTail++;
+            if(totalTail%20==0 && intervalDuration>minDuration) {
+                clearInterval(gameInterval);
+                window.clearInterval(virusInterval);
+                intervalDuration=intervalDuration-10;
+                // console.log(intervalDuration);
+                main();
+            }
+            if(totalTail%10==0 && hurdleArray.length<maxHurdles) {
+                let hurdle=generateCoordinates();
+                hurdleArray.push(hurdle);
+            }
             fruitPosition();
         }
         score.innerText = totalTail;
 
-    }, 150);
+    }, intervalDuration);
 }
