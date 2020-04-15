@@ -1,13 +1,11 @@
 var canvas = document.getElementById("snakeCanvas");
+var context = canvas.getContext("2d");
 var score = document.getElementById("score");
 var startBtn = document.getElementById("startBtn");
 var pauseBtn = document.getElementById("pauseBtn");
 var resumeBtn = document.getElementById("resumeBtn");
-var context = canvas.getContext("2d");
 var fruit = document.getElementById("fruit");
-var rock = document.getElementById("rock");
 var virus = document.getElementById("virus");
-//coordinates of snake head
 var snakeHeadX, snakeHeadY, fruitX, fruitY, virusX, virusY, tail, totalTail, directionVar, direction, previousDir;
 var speed=1, xSpeed, ySpeed;
 const scale = 20;
@@ -20,18 +18,14 @@ var gameInterval,  //interval after which screen will be updated
     intervalDuration=150, //starting screen updation interval
     minDuration=75; //minimum screen updation interval
 var playing=false, gameStarted=false;
-var boundaryCollision=false, hurdleCollision=false;
+var boundaryCollision=false;
 var tail0;
-var hurdleArray, maxHurdles;
 startBtn.addEventListener("click", startGame);
-pauseBtn.addEventListener("click", pauseGame);
-resumeBtn.addEventListener("click", resumeGame)
 
 //reset the variables to starting value
 function reset() {
+    clearInterval(gameInterval);
     tail = [];
-    hurdleArray = [];
-    maxHurdles = 15;
     totalTail = 0;
     directionVar = "Right";
     direction = "Right";
@@ -47,29 +41,10 @@ function reset() {
 function startGame() {
     gameStarted=true;
     playing=true;
-    // clearInterval(gameInterval);
-    // init();
     reset();
     fruitPosition();
     virusPosition();
-    staticHurdles();
-    // console.log(hurdleArray);
-    // drawHurdles();
     main();
-}
-
-function staticHurdles() {
-    let hurdle;
-    for(let i=0;i<2;i++) {
-        hurdle=generateCoordinates();
-        hurdleArray.push(hurdle);
-    }
-}
-
-function drawHurdles() {
-    for(let i=0; i<hurdleArray.length; i++) {
-        context.drawImage(rock, hurdleArray[i].xCoordinate, hurdleArray[i].yCoordinate, scale, scale);
-    }
 }
 
 function pauseGame() {
@@ -115,9 +90,6 @@ function changeDirection() {
                 xSpeed = 0;
                 ySpeed = scale * -speed;
             } 
-            // else {
-            //     direction = "Down";
-            // }
             break;
 
         case "Down":
@@ -127,9 +99,6 @@ function changeDirection() {
                 xSpeed = 0;
                 ySpeed = scale * speed;
             } 
-            // else {
-            //     direction = "Up";
-            // }
             break;
 
         case "Left":
@@ -139,9 +108,6 @@ function changeDirection() {
                 xSpeed = scale * -speed;
                 ySpeed = 0;
             } 
-            // else {
-            //     direction = "Right";
-            // }
             break;
 
         case "Right":
@@ -151,9 +117,6 @@ function changeDirection() {
                 xSpeed = scale * speed;
                 ySpeed = 0;
             } 
-            // else {
-            //     direction = "Left";
-            // }
             break;
     }
 }
@@ -168,7 +131,7 @@ function generateCoordinates() {
 //check snake's collision 
 function checkCollision() {
     let tailCollision=false, virusCollision=false;
-    boundaryCollision=false, hurdleCollision=false;
+    boundaryCollision=false;
     //with its own tail
     for (let i = 0; i < tail.length; i++) {
         if (snakeHeadX == tail[i].tailX && snakeHeadY == tail[i].tailY) {
@@ -184,12 +147,7 @@ function checkCollision() {
     if(snakeHeadX===virusX && snakeHeadY===virusY) {
         virusCollision=true;
     }
-    for(let i=0; i<hurdleArray.length;i++) {
-        if(snakeHeadX===hurdleArray[i].xCoordinate && snakeHeadY===hurdleArray[i].yCoordinate) {
-            hurdleCollision=true;
-        }
-    }
-    return (tailCollision || boundaryCollision || virusCollision || hurdleCollision);
+    return (tailCollision || boundaryCollision || virusCollision);
 }
 
 //-----------------------------------------------------SNAKE-----------------------------------------------------------//
@@ -201,29 +159,29 @@ function drawSnakeHead(color) {
         //eyes
         context.beginPath();
         if(direction==="Up") {
-            context.arc(snakeHeadX+4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
-            context.arc(snakeHeadX+scale-4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
+            context.arc(snakeHeadX+(scale/5), snakeHeadY+(scale/5), scale/8, 0, 2 * Math.PI);
+            context.arc(snakeHeadX+scale-(scale/5), snakeHeadY+(scale/5), scale/8, 0, 2 * Math.PI);
         }
         else if(direction==="Down") {
-            context.arc(snakeHeadX+4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
-            context.arc(snakeHeadX+scale-4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
+            context.arc(snakeHeadX+(scale/5), snakeHeadY+scale-(scale/5), scale/8, 0, 2 * Math.PI);
+            context.arc(snakeHeadX+scale-(scale/5), snakeHeadY+scale-(scale/5), scale/8, 0, 2 * Math.PI);
         }
         else if(direction==="Left") {
-            context.arc(snakeHeadX+4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
-            context.arc(snakeHeadX+4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
+            context.arc(snakeHeadX+(scale/5), snakeHeadY+(scale/5), scale/8, 0, 2 * Math.PI);
+            context.arc(snakeHeadX+(scale/5), snakeHeadY+scale-(scale/5), scale/8, 0, 2 * Math.PI);
         }
         else {
-            context.arc(snakeHeadX+scale-4, snakeHeadY+4, 2.5, 0, 2 * Math.PI);
-            context.arc(snakeHeadX+scale-4, snakeHeadY+scale-4, 2.5, 0, 2 * Math.PI);
+            context.arc(snakeHeadX+scale-(scale/5), snakeHeadY+(scale/5), scale/8, 0, 2 * Math.PI);
+            context.arc(snakeHeadX+scale-(scale/5), snakeHeadY+scale-(scale/5), scale/8, 0, 2 * Math.PI);
         }
         context.fillStyle = "black";
         context.fill();
 }
 
 function drawSnakeTail() {
-    let tailRadius = 5;
+    let tailRadius = scale/4;
         for (i = 0; i < tail.length; i++) {
-            tailRadius=tailRadius+(5/tail.length);
+            tailRadius=tailRadius+((scale/2-scale/4)/tail.length);
             context.beginPath();
             context.fillStyle = "#6c2c3a";
             context.arc((tail[i].tailX+scale/2), (tail[i].tailY+scale/2), tailRadius, 0, 2 * Math.PI);
@@ -255,7 +213,6 @@ function moveSnakeBack()
     snakeHeadX -= xSpeed;
     snakeHeadY -= ySpeed;
     drawVirus();
-    drawHurdles();
     drawFruit();
     drawSnakeTail();
 }
@@ -267,7 +224,7 @@ function drawSnake() {
     if (checkCollision()) {
         clearInterval(gameInterval);
         clearInterval(virusInterval);
-        if(boundaryCollision || hurdleCollision) {
+        if(boundaryCollision) {
             moveSnakeBack();
         }
         drawSnakeHead("red");
@@ -323,20 +280,6 @@ function checkSamePosition() {
             break;
         }
     }
-    for(let i=0; i<hurdleArray.length; i++) {
-        if(fruitX===hurdleArray[i].xCoordinate && fruitY===hurdleArray[i].yCoordinate) {
-            
-            fruitPosition();
-            console.log("sameFruit");
-            break;
-        }
-        if(virusX===hurdleArray[i].xCoordinate && virusY===hurdleArray[i].yCoordinate) {
-            
-            virusPosition();
-            console.log("sameVirus");
-            break;
-        }
-    }
 }
 
 function main() {
@@ -345,7 +288,6 @@ function main() {
     gameInterval = window.setInterval(() => {
         context.clearRect(0, 0, 500, 500);
         checkSamePosition();
-        drawHurdles();
         drawVirus();
         drawFruit();
         moveSnakeForward();
@@ -358,12 +300,7 @@ function main() {
                 clearInterval(gameInterval);
                 window.clearInterval(virusInterval);
                 intervalDuration=intervalDuration-10;
-                // console.log(intervalDuration);
                 main();
-            }
-            if(totalTail%10==0 && hurdleArray.length<maxHurdles) {
-                let hurdle=generateCoordinates();
-                hurdleArray.push(hurdle);
             }
             fruitPosition();
         }

@@ -60,7 +60,7 @@ canvas {
     margin-right: 10px;
 }
 
-#fruit, #virus, #rock{
+#fruit, #virus {
     display: none;
 }
 
