@@ -33,6 +33,14 @@ canvas {
     position: relative;
 }
 
+.modal-dialog {
+    max-width: 300px;
+}
+
+.modal-body  {
+    text-align: center;
+}
+
 .btn {
     display: block;
     width: 15%;
@@ -45,6 +53,10 @@ canvas {
 .btn:hover {
     color: brown;
     background-color: #fff;
+}
+
+.modal-btn {
+    width: 20%;
 }
 
 .buttons {
@@ -62,6 +74,17 @@ canvas {
 
 #fruit, #virus {
     display: none;
+}
+
+#snake {
+    height: 100px;
+    width: 100px;
+    margin-bottom: 20px;
+}
+
+#alertMsg {
+    color: brown;
+    font-weight: bolder;
 }
 
 #pauseBtn, #resumeBtn {

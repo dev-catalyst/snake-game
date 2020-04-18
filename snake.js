@@ -17,14 +17,23 @@ var gameInterval,  //interval after which screen will be updated
     virusInterval, //interval after which virus position will be updated
     intervalDuration=150, //starting screen updation interval
     minDuration=75; //minimum screen updation interval
-var playing=false, gameStarted=false;
-var boundaryCollision=false;
+var playing, gameStarted;
+var boundaryCollision;
 var tail0;
+
+var alertModal = document.getElementById("alertModal");
+var alertMsg = document.getElementById("alertMsg");
+var modalBtn = document.querySelector(".modal-btn");
+
+
 startBtn.addEventListener("click", startGame);
 
 //reset the variables to starting value
 function reset() {
     clearInterval(gameInterval);
+    clearInterval(virusInterval);
+    intervalDuration=150, 
+    minDuration=75;
     tail = [];
     totalTail = 0;
     directionVar = "Right";
@@ -36,12 +45,14 @@ function reset() {
     snakeHeadY = 0;
     pauseBtn.style.backgroundColor="#fff";
     resumeBtn.style.backgroundColor="#fff";
+    playing=false, gameStarted=false;
+    boundaryCollision=false;
 }
 
 function startGame() {
+    reset();
     gameStarted=true;
     playing=true;
-    reset();
     fruitPosition();
     virusPosition();
     main();
@@ -64,7 +75,9 @@ function resumeGame()
 }
 
 //EventListener to check which arrow key is pressed
-window.addEventListener("keydown", (event) => {
+window.addEventListener("keydown", pressedKey);
+
+function pressedKey() {
     if(event.keyCode===32 && gameStarted) {
         if(playing) {
             pauseGame();
@@ -78,7 +91,7 @@ window.addEventListener("keydown", (event) => {
         directionVar = event.key.replace("Arrow", "");
         changeDirection();
     }
-});
+}
 
 //change the direction of snake based on arrow key pressed
 function changeDirection() {
@@ -229,9 +242,21 @@ function drawSnake() {
         }
         drawSnakeHead("red");
         setTimeout(()=>{ 
-            alert("Game Over! Your Score is: " + totalTail);
-             //reload the page        
-            window.location = window.location;
+            alertMsg.textContent = totalTail;
+            $('#alertModal').modal('show');
+            $( "#alertModal" ).on('shown.bs.modal', function(){
+                window.removeEventListener("keydown", pressedKey);
+            });
+            $('#alertModal').on('hidden.bs.modal', function () {
+                context.clearRect(0, 0, 500, 500);
+                score.innerText = 0;
+                window.addEventListener("keydown", pressedKey);
+                reset();
+              })
+            modalBtn.addEventListener("click", ()=>{
+                context.clearRect(0, 0, 500, 500);
+                score.innerText = 0;
+            });
         }, 1000);
     }
 }
@@ -299,6 +324,7 @@ function main() {
             if(totalTail%20==0 && intervalDuration>minDuration) {
                 clearInterval(gameInterval);
                 window.clearInterval(virusInterval);
+                console.log(intervalDuration);
                 intervalDuration=intervalDuration-10;
                 main();
             }
