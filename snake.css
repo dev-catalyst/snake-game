@@ -82,7 +82,7 @@ canvas {
     margin-bottom: 20px;
 }
 
-#alertMsg {
+#scoreModal {
     color: brown;
     font-weight: bolder;
 }

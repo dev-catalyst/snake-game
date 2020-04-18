@@ -21,9 +21,9 @@ var playing, gameStarted;
 var boundaryCollision;
 var tail0;
 
-var alertModal = document.getElementById("alertModal");
-var alertMsg = document.getElementById("alertMsg");
-var modalBtn = document.querySelector(".modal-btn");
+// var alertModal = document.getElementById("alertModal");
+// var alertMsg = document.getElementById("alertMsg");
+// var modalBtn = document.querySelector(".modal-btn");
 
 
 startBtn.addEventListener("click", startGame);
@@ -242,7 +242,7 @@ function drawSnake() {
         }
         drawSnakeHead("red");
         setTimeout(()=>{ 
-            alertMsg.textContent = totalTail;
+            scoreModal.textContent = totalTail;
             $('#alertModal').modal('show');
             $( "#alertModal" ).on('shown.bs.modal', function(){
                 window.removeEventListener("keydown", pressedKey);
