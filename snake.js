@@ -21,10 +21,6 @@ var playing, gameStarted;
 var boundaryCollision;
 var tail0;
 
-// var alertModal = document.getElementById("alertModal");
-// var alertMsg = document.getElementById("alertMsg");
-// var modalBtn = document.querySelector(".modal-btn");
-
 
 startBtn.addEventListener("click", startGame);
 
@@ -244,9 +240,11 @@ function drawSnake() {
         setTimeout(()=>{ 
             scoreModal.textContent = totalTail;
             $('#alertModal').modal('show');
+            //if modal is shown, remove the keydown event listener so that snake doesn't move 
             $( "#alertModal" ).on('shown.bs.modal', function(){
                 window.removeEventListener("keydown", pressedKey);
             });
+            //when modal hides, reset every variable and add keydown event listener again
             $('#alertModal').on('hidden.bs.modal', function () {
                 context.clearRect(0, 0, 500, 500);
                 score.innerText = 0;
