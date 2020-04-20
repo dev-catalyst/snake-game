@@ -13,10 +13,10 @@ git clone https://github.com/dev-catalyst/snake-game.git
 ## What's inside?
 The cloned folder contains the following files:
 
-1. snake.html
-2. snake.css
-3. snake.js
-4. images folder
+* snake.html
+* snake.css
+* snake.js
+* images folder
 
 ## How to run the game?
 Double-click on the snake.html file to open it in the browser.
