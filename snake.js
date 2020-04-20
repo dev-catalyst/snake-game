@@ -319,10 +319,10 @@ function main() {
         //check if snake eats the fruit - increase size of its tail, update score and find new fruit position
         if (snakeHeadX === fruitX && snakeHeadY === fruitY) {
             totalTail++;
+            //increase the speed of game after every 20 points
             if(totalTail%20==0 && intervalDuration>minDuration) {
                 clearInterval(gameInterval);
                 window.clearInterval(virusInterval);
-                console.log(intervalDuration);
                 intervalDuration=intervalDuration-10;
                 main();
             }
